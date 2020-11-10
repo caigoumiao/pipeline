@@ -19,6 +19,8 @@ var (
 	ErrorsNodesOrEdgesEmpty      = errors.New("edges or nodes is empty")
 	ErrorsNodeNil                = errors.New("node is nil")
 	ErrorsCannotReachTail        = errors.New("pipeline cannot reach tail")
+	ErrorsHeadNodeNotUnique      = errors.New("headNode number is not 1")
+	ErrorsTailNodeNotUnique      = errors.New("tailNode number is not 1")
 )
 
 func NewManager() *Manager {
@@ -138,11 +140,140 @@ func (m *Manager) connectNodes() error {
 
 // todo:
 // 检查节点以及连接的正确性
-// 检查标准如下：
-// 1、分裂节点的子节点不能为空，最后一定在合并节点汇合
-// 2、edges 数组也需要检查
-// 3、
+// 1、检查节点的是否存在，出入度是否合乎规则
+// 2、检查从头节点到尾节点的连通性
 func (m *Manager) validate() error {
+	// 检查节点
+	var headNodeCount, tailNodeCount int
+	var inEdges = make(map[*Node]int)
+	var outEdges = make(map[*Node]int)
+	for i := 0; i < len(m.edges); i++ {
+		preNode, ok := m.nodes[m.edges[i][0]]
+		if !ok {
+			return fmt.Errorf("edges[nodename=%s] cannot be fouond in nodes", m.edges[i][0])
+		}
+		forNode, ok := m.nodes[m.edges[i][1]]
+		if !ok {
+			return fmt.Errorf("edges[nodename=%s] cannot be fouond in nodes", m.edges[i][1])
+		}
+		if preNode.Typ == NodeTypTail {
+			return fmt.Errorf("tailNode[%s] out edges not equals 0", preNode.nodeName)
+		} else if preNode.Typ == NodeTypHead {
+			headNodeCount++
+		}
+		if forNode.Typ == NodeTypHead {
+			return fmt.Errorf("headNode[%s] in edges not equals 0", forNode.nodeName)
+		} else if forNode.Typ == NodeTypTail {
+			tailNodeCount++
+		}
+		inEdges[forNode]++
+		outEdges[preNode]++
+	}
+	// 头尾节点唯一性的检查
+	if headNodeCount != 1 {
+		return ErrorsHeadNodeNotUnique
+	}
+	if tailNodeCount != 1 {
+		return ErrorsTailNodeNotUnique
+	}
+	if err := validateEdgesOfNodes(&inEdges, &outEdges); err != nil {
+		return err
+	}
+	// 检查连通性
+	if err := validateNodesConnectivity(m.nodes); err != nil {
+		return err
+	}
+	return nil
+}
+
+// 检查节点的连通性
+func validateNodesConnectivity(nodes map[string]*Node) error {
+	var queue []*Node
+	var vis = make(map[*Node]bool)
+	queue = append(queue, nodes[headNodeName])
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = queue[1:]
+		if node.Typ == NodeTypDivider || node.Typ == NodeTypJudger {
+			for i := 0; i < len(node.Next); i++ {
+				if _, ok := vis[node.Next[i]]; !ok {
+					queue = append(queue, node.Next[i])
+				}
+			}
+			vis[node] = true
+		}
+		//
+		p := node
+		for {
+			if p == nil || (p.Typ != NodeTypTail && len(p.Next) == 0) || p.Next[0] == nil {
+				return ErrorsNodeNil
+			}
+			vis[p] = true
+			if p.Typ == NodeTypTail || vis[p.Next[0]] {
+				break
+			}
+			p = p.Next[0]
+		}
+	}
+	return nil
+}
+
+// 节点入度、出度的检查
+func validateEdgesOfNodes(inEdges *map[*Node]int, outEdges *map[*Node]int) error {
+	// 节点入度的检查
+	for node, c := range *inEdges {
+		switch node.Typ {
+		case NodeTypHead:
+			return fmt.Errorf("headNode[%s] in edges should eq 0", node.nodeName)
+		case NodeTypWorker:
+			if c != 1 {
+				return fmt.Errorf("workerNode[%s] in edges should eq 1", node.nodeName)
+			}
+		case NodeTypDivider:
+			if c != 1 {
+				return fmt.Errorf("dividerNode[%s] in edges should eq 1", node.nodeName)
+			}
+		case NodeTypMerger:
+			if c <= 1 {
+				return fmt.Errorf("mergerNode[%s] in edges should gt 1", node.nodeName)
+			}
+		case NodeTypJudger:
+			if c != 1 {
+				return fmt.Errorf("judgerNode[%s] in edges should be 1", node.nodeName)
+			}
+		case NodeTypTail:
+			if c < 1 {
+				return fmt.Errorf("tailNode[%s] in edges should lt 1", node.nodeName)
+			}
+		}
+	}
+	// 节点出度的检查
+	for node, c := range *outEdges {
+		switch node.Typ {
+		case NodeTypHead:
+			if c != 1 {
+				return fmt.Errorf("headNode[%s] out edges should eq 1", node.nodeName)
+			}
+		case NodeTypWorker:
+			if c != 1 {
+				return fmt.Errorf("workerNode[%s] out edges should eq 1", node.nodeName)
+			}
+		case NodeTypDivider:
+			if c <= 1 {
+				return fmt.Errorf("dividerNode[%s] out edges should gt 1", node.nodeName)
+			}
+		case NodeTypMerger:
+			if c != 1 {
+				return fmt.Errorf("mergerNode[%s] out edges should eq 1", node.nodeName)
+			}
+		case NodeTypJudger:
+			if c <= 1 {
+				return fmt.Errorf("judgerNode[%s] out edges should gt 1", node.nodeName)
+			}
+		case NodeTypTail:
+			return fmt.Errorf("tailNode[%s] out edges should eq 0", node.nodeName)
+		}
+	}
 	return nil
 }
 
