@@ -5,15 +5,15 @@ pipeline 是一个基于Golang 实现的统一流程引擎。
 
 1、顺序结构
 
-<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBf3a591255bb4fcc13ae68cf883f23e64?method=download&shareKey=8e6114a892a327709bbc40f20f9c38d9"></img>
+<img height="300" src="https://note.youdao.com/yws/api/personal/file/WEBf3a591255bb4fcc13ae68cf883f23e64?method=download&shareKey=8e6114a892a327709bbc40f20f9c38d9"></img>
 
 2、条件结构
 
-<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEB862d12134e092757985ffa966981994d?method=download&shareKey=b2730dc8c2dfff93fa906c5d401c3033"></img>
+<img height="400" src="https://note.youdao.com/yws/api/personal/file/WEB862d12134e092757985ffa966981994d?method=download&shareKey=b2730dc8c2dfff93fa906c5d401c3033"></img>
 
 3、归并结构
 
-<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBb61c6cfc3be7f7dcebc8080e9f9f104d?method=download&shareKey=53ab80fb9c7e7d5fcfe3b02299ffd1e5"></img>
+<img height="300" src="https://note.youdao.com/yws/api/personal/file/WEBb61c6cfc3be7f7dcebc8080e9f9f104d?method=download&shareKey=53ab80fb9c7e7d5fcfe3b02299ffd1e5"></img>
 
 
 ## 安装
@@ -149,7 +149,7 @@ if err := m.BuildPipeline([][]string{
 ```
 上面的示例代码构建了一个顺序结构的pipeline, 输入a, 求解(a+2)*3的结果。示例图如下：
 
-<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBdc4cd6090427c967936d1b0b9ce1c668?method=download&shareKey=f5d43f2fcab3c627618c2828586033c2" />
+<img height="300" src="https://note.youdao.com/yws/api/personal/file/WEBdc4cd6090427c967936d1b0b9ce1c668?method=download&shareKey=f5d43f2fcab3c627618c2828586033c2" />
 <br>
 <br>
 
