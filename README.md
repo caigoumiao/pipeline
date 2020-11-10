@@ -5,15 +5,15 @@ pipeline 是一个基于Golang 实现的统一流程引擎。
 
 1、顺序结构
 
-![](./img/order2.png)
+[点击查看图片](./img/order2.png)
 
 2、条件结构
 
-[如图](./img/condition1.png)
+[点击查看图片](./img/condition1.png)
 
 3、归并结构
 
-![](./img/guibing.png)
+[点击查看图片](./img/guibing.png)
 
 ## 安装
 ````
@@ -148,7 +148,7 @@ if err := m.BuildPipeline([][]string{
 ```
 上面的示例代码构建了一个顺序结构的pipeline, 输入a, 求解(a+2)*3的结果。示例图如下：
 
-![](./img/order3.png)
+[点击查看图片](./img/order3.png)
 
 2、执行pipeline
 
