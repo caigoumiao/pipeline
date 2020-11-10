@@ -9,7 +9,7 @@ pipeline 是一个基于Golang 实现的统一流程引擎。
 
 2、条件结构
 
-![](./img/condition1.png)
+[如图](./img/condition1.png)
 
 3、归并结构
 
