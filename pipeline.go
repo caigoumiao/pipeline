@@ -169,12 +169,9 @@ func (m *Manager) validate() error {
 		inEdges[forNode]++
 		outEdges[preNode]++
 	}
-	// 头尾节点唯一性的检查
+	// 头节点唯一性的检查
 	if headNodeCount != 1 {
 		return ErrorsHeadNodeNotUnique
-	}
-	if tailNodeCount != 1 {
-		return ErrorsTailNodeNotUnique
 	}
 	if err := validateEdgesOfNodes(&inEdges, &outEdges); err != nil {
 		return err
@@ -205,7 +202,7 @@ func validateNodesConnectivity(nodes map[string]*Node) error {
 		//
 		p := node
 		for {
-			if p == nil || (p.Typ != NodeTypTail && len(p.Next) == 0) || p.Next[0] == nil {
+			if p == nil || (p.Typ != NodeTypTail && len(p.Next) == 0) || (p.Typ != NodeTypTail && p.Next[0] == nil) {
 				return ErrorsNodeNil
 			}
 			vis[p] = true
