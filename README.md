@@ -5,15 +5,15 @@ pipeline 是一个基于Golang 实现的统一流程引擎。
 
 1、顺序结构
 
-<img height="60%" src="http://note.youdao.com/yws/public/resource/e010f579ae826221ced71b96cd28ddfe/xmlnote/WEBRESOURCEb33cdb95e77a3493da7684764d6bf9d2/24607"></img>
+<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBf3a591255bb4fcc13ae68cf883f23e64?method=download&shareKey=8e6114a892a327709bbc40f20f9c38d9"></img>
 
 2、条件结构
 
-<img height="60%" src="http://note.youdao.com/yws/public/resource/e010f579ae826221ced71b96cd28ddfe/xmlnote/WEBRESOURCEe8efe5ff39d970e3160557ff435f959f/24606"></img>
+<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEB862d12134e092757985ffa966981994d?method=download&shareKey=b2730dc8c2dfff93fa906c5d401c3033"></img>
 
 3、归并结构
 
-<img height="60%" src="http://note.youdao.com/yws/public/resource/e010f579ae826221ced71b96cd28ddfe/xmlnote/WEBRESOURCE4f3d2b2517c35d58767db2b39e4768e1/24608"></img>
+<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBb61c6cfc3be7f7dcebc8080e9f9f104d?method=download&shareKey=53ab80fb9c7e7d5fcfe3b02299ffd1e5"></img>
 
 ## 安装
 ````
@@ -96,44 +96,47 @@ pIndex 即指示了数据经过条件判断后该执行的下一节点。
 
 ```go
 m := NewManager()
-	if err := m.AddWorkerNode("work1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-		} else {
-			fmt.Println(a)
-			in.Data = a + 2
-			out = in
-		}
-		return
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("work2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-		} else {
-			fmt.Println(a)
-			in.Data = a * 3
-			out = in
-		}
-		return
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.BuildPipeline([][]string{
-		{"head000", "work1"},
-		{"work1", "work2"},
-		{"work2", "tail111"},
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
+// 添加工作节点1
+if err := m.AddWorkerNode("work1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+    } else {
+        fmt.Println(a)
+        in.Data = a + 2
+        out = in
+    }
+    return
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+// 添加工作节点2
+if err := m.AddWorkerNode("work2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+    } else {
+        fmt.Println(a)
+        in.Data = a * 3
+        out = in
+    }
+    return
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+// 添加节点间关系，并开始构建
+if err := m.BuildPipeline([][]string{
+    {"head000", "work1"},
+    {"work1", "work2"},
+    {"work2", "tail111"},
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
 ```
 上面的示例代码构建了一个顺序结构的pipeline, 输入a, 求解(a+2)*3的结果。示例图如下：
 
-<img height="50%" src="https://note.youdao.com/yws/api/personal/file/WEB8f9cc7dd7212b913f1bdfdcd80e61156?method=download&shareKey=f6c1edc618588454644801443cfe5f19" />
+<img height="40%" src="https://note.youdao.com/yws/api/personal/file/WEBdc4cd6090427c967936d1b0b9ce1c668?method=download&shareKey=f5d43f2fcab3c627618c2828586033c2" />
 <br>
 <br>
 2、执行pipeline
@@ -150,106 +153,106 @@ out,err := m.Handle(&rawData{Data: a})
 带归并结构的示例：求解bool值：(a+2)*5 < (a+3)*4
 ```go
 m := NewManager()
-	if err := m.AddDividerNode("divider1", func(ctx context.Context, in *rawData) (out []*rawData, err error) {
-		out = append(out, in)
-		out = append(out, &rawData{
-			Data: in.Data,
-		})
-		return
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a + 2
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a * 5
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w3", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a + 3
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w4", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a * 4
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddMergerNode("m1", func(ctx context.Context, in []*rawData) (out *rawData, err error) {
-		if len(in) != 2 {
-			err = fmt.Errorf("inData length wrong")
-			return
-		}
-		out = &rawData{
-			Meta: make(map[string]interface{}),
-		}
-		out.Meta["res"] = in[0].Data.(int) < in[1].Data.(int)
-		return
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.BuildPipeline([][]string{
-		{"head000", "divider1"},
-		{"divider1", "w1"},
-		{"divider1", "w3"},
-		{"w1", "w2"},
-		{"w3", "w4"},
-		{"w2", "m1"},
-		{"w4", "m1"},
-		{"m1", "tail111"},
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	var a = 1
-	if out, err := m.Handle(&rawData{
-		Data: a,
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	} else {
-		if !out.Meta["res"].(bool) {
-			t.Errorf("wrong! res=false, ans=true")
-		}
-	}
+if err := m.AddDividerNode("divider1", func(ctx context.Context, in *rawData) (out []*rawData, err error) {
+    out = append(out, in)
+    out = append(out, &rawData{
+        Data: in.Data,
+    })
+    return
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a + 2
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a * 5
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w3", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a + 3
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w4", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a * 4
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddMergerNode("m1", func(ctx context.Context, in []*rawData) (out *rawData, err error) {
+    if len(in) != 2 {
+        err = fmt.Errorf("inData length wrong")
+        return
+    }
+    out = &rawData{
+        Meta: make(map[string]interface{}),
+    }
+    out.Meta["res"] = in[0].Data.(int) < in[1].Data.(int)
+    return
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.BuildPipeline([][]string{
+    {"head000", "divider1"},
+    {"divider1", "w1"},
+    {"divider1", "w3"},
+    {"w1", "w2"},
+    {"w3", "w4"},
+    {"w2", "m1"},
+    {"w4", "m1"},
+    {"m1", "tail111"},
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+var a = 1
+if out, err := m.Handle(&rawData{
+    Data: a,
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+} else {
+    if !out.Meta["res"].(bool) {
+        t.Errorf("wrong! res=false, ans=true")
+    }
+}
 ```
 
 带判断结构的示例：
@@ -258,102 +261,102 @@ m := NewManager()
 
 ```go
 m := NewManager()
-	if err := m.AddJudgerNode("j1", func(ctx context.Context, in *rawData) (pipeIndex int) {
-		a := in.Data.(int)
-		if a < 100 {
-			return 0
-		} else if a < 200 {
-			return 1
-		} else {
-			return 2
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a + 5
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		if a, ok := in.Data.(int); !ok {
-			err = fmt.Errorf("type of in.Data is not int")
-			return
-		} else {
-			in.Data = a * 2
-			out = in
-			return
-		}
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.AddWorkerNode("w3", func(ctx context.Context, in *rawData) (out *rawData, err error) {
-		err = fmt.Errorf("data out bound")
-		return
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if err := m.BuildPipeline([][]string{
-		{"head000", "j1"},
-		{"j1", "w1"},
-		{"j1", "w2"},
-		{"j1", "w3"},
-		{"w1", "tail111"},
-		{"w2", "tail111"},
-		{"w3", "tail111"},
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	var a = 1
-	if out, err := m.Handle(&rawData{
-		Data: a,
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	} else {
-		if out.Data.(int) != 6 {
-			t.Errorf("res=%d, trueAnswer=%d", out.Data.(int), 6)
-			t.FailNow()
-		}
-		t.Log("test1 passed")
-	}
+if err := m.AddJudgerNode("j1", func(ctx context.Context, in *rawData) (pipeIndex int) {
+    a := in.Data.(int)
+    if a < 100 {
+        return 0
+    } else if a < 200 {
+        return 1
+    } else {
+        return 2
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w1", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a + 5
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w2", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    if a, ok := in.Data.(int); !ok {
+        err = fmt.Errorf("type of in.Data is not int")
+        return
+    } else {
+        in.Data = a * 2
+        out = in
+        return
+    }
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.AddWorkerNode("w3", func(ctx context.Context, in *rawData) (out *rawData, err error) {
+    err = fmt.Errorf("data out bound")
+    return
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+if err := m.BuildPipeline([][]string{
+    {"head000", "j1"},
+    {"j1", "w1"},
+    {"j1", "w2"},
+    {"j1", "w3"},
+    {"w1", "tail111"},
+    {"w2", "tail111"},
+    {"w3", "tail111"},
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+}
+var a = 1
+if out, err := m.Handle(&rawData{
+    Data: a,
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+} else {
+    if out.Data.(int) != 6 {
+        t.Errorf("res=%d, trueAnswer=%d", out.Data.(int), 6)
+        t.FailNow()
+    }
+    t.Log("test1 passed")
+}
 
-	a = 150
-	if out, err := m.Handle(&rawData{
-		Data: a,
-	}); err != nil {
-		t.Error(err)
-		t.FailNow()
-	} else {
-		if out.Data.(int) != 300 {
-			t.Errorf("res=%d, trueAnswer=%d", out.Data.(int), 300)
-			t.FailNow()
-		}
-		t.Log("test2 passed")
-	}
+a = 150
+if out, err := m.Handle(&rawData{
+    Data: a,
+}); err != nil {
+    t.Error(err)
+    t.FailNow()
+} else {
+    if out.Data.(int) != 300 {
+        t.Errorf("res=%d, trueAnswer=%d", out.Data.(int), 300)
+        t.FailNow()
+    }
+    t.Log("test2 passed")
+}
 
-	a = 203
-	if _, err := m.Handle(&rawData{
-		Data: a,
-	}); err == nil {
-		t.Errorf("predict error occurs, but not")
-		t.FailNow()
-	} else {
-		t.Log("test3 passed")
-		fmt.Println(err.Error())
-	}
+a = 203
+if _, err := m.Handle(&rawData{
+    Data: a,
+}); err == nil {
+    t.Errorf("predict error occurs, but not")
+    t.FailNow()
+} else {
+    t.Log("test3 passed")
+    fmt.Println(err.Error())
+}
 ```
 
 ## 其他问题
